@@ -1,0 +1,6 @@
+com\taskflow\taskflow\comment\service\CommentServiceTest.class
+com\taskflow\taskflow\admin\service\AdminServiceTest.class
+com\taskflow\taskflow\user\service\UserServiceTest.class
+com\taskflow\taskflow\dashboard\service\DashboardServiceTest.class
+com\taskflow\taskflow\project\service\ProjectServiceTest.class
+com\taskflow\taskflow\task\service\TaskServiceTest.class

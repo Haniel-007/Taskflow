@@ -1,0 +1,56 @@
+epic: "Gestão Avançada de Tarefas e Dashboard"
+
+stories:
+  - id: "GT-4"
+    title: "Editar Tarefa"
+    objective: "Permitir que a equipe ajuste e refine as tarefas conforme o trabalho progride."
+    context: "Como um Colaborador (Lucas), eu quero poder editar o título, a descrição, o responsável e a data de entrega de uma tarefa, para que eu possa manter as informações sempre atualizadas."
+    architecture_patterns:
+      - "Endpoint: PUT /api/tasks/{taskId}"
+      - "Módulo: task"
+      - "Segurança: Endpoint protegido para membros do projeto."
+      - "DTO: UpdateTaskRequest com title, description, assigneeId, dueDate."
+      - "Banco de Dados: Atualiza o registro na tabela 'tasks'."
+    acceptance_criteria:
+      - "DADO que sou membro de um projeto e estou autenticado,"
+      - "QUANDO eu envio uma requisição PUT para /api/tasks/{taskId} com dados válidos,"
+      - "ENTÃO o sistema deve retornar o status 200 OK com os dados da tarefa atualizada."
+      - "E os campos da tarefa no banco de dados devem ser atualizados."
+      - "DADO que tento editar uma tarefa de um projeto do qual não sou membro,"
+      - "ENTÃO o sistema deve retornar o status 403 Forbidden."
+
+  - id: "GT-5"
+    title: "Excluir Tarefa"
+    objective: "Permitir que a equipe remova tarefas que não são mais necessárias."
+    context: "Como uma Gerente (Sofia), eu quero poder excluir uma tarefa de um projeto, para manter o quadro limpo e focado no trabalho relevante."
+    architecture_patterns:
+      - "Endpoint: DELETE /api/tasks/{taskId}"
+      - "Módulo: task"
+      - "Segurança: Endpoint protegido para membros do projeto."
+      - "Banco de Dados: Remove o registro da tabela 'tasks'."
+    acceptance_criteria:
+      - "DADO que sou membro de um projeto e estou autenticado,"
+      - "QUANDO eu envio uma requisição DELETE para /api/tasks/{taskId},"
+      - "ENTÃO o sistema deve retornar o status 204 No Content."
+      - "E a tarefa deve ser removida do banco de dados."
+      - "DADO que tento excluir uma tarefa de um projeto do qual não sou membro,"
+      - "ENTÃO o sistema deve retornar o status 403 Forbidden."
+
+  - id: "DR-1"
+    title: "Dashboard Principal do Projeto"
+    objective: "Fornecer uma visão geral e rápida do status do projeto para todos os membros."
+    context: "Como uma Gerente (Sofia), eu quero ver um dashboard para um projeto específico que mostre a contagem de tarefas por status (A Fazer, Em Progresso, Concluído) e um resumo do progresso geral, para que eu possa avaliar a saúde do projeto rapidamente."
+    architecture_patterns:
+      - "Endpoint: GET /api/projects/{projectId}/dashboard"
+      - "Módulo: dashboard (novo)"
+      - "Segurança: Endpoint protegido para membros do projeto."
+      - "DTO: DashboardResponse com taskCountByStatus (Map<TaskStatus, Long>) e progressPercentage (double)."
+      - "Banco de Dados: Consulta agregada na tabela 'tasks' para contar tarefas por status."
+    acceptance_criteria:
+      - "DADO que sou membro de um projeto e estou autenticado,"
+      - "QUANDO eu faço uma requisição GET para /api/projects/{projectId}/dashboard,"
+      - "ENTÃO o sistema deve retornar o status 200 OK."
+      - "E o corpo da resposta deve conter um objeto com a contagem de tarefas para cada status (TODO, IN_PROGRESS, DONE)."
+      - "E o corpo da resposta deve conter a porcentagem de progresso do projeto (baseada na proporção de tarefas 'DONE')."
+      - "DADO que tento ver o dashboard de um projeto do qual não sou membro,"
+      - "ENTÃO o sistema deve retornar o status 403 Forbidden."

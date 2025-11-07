@@ -1,0 +1,40 @@
+epic: "Colaboração e Gestão de Equipes"
+
+stories:
+  - id: "CL-1"
+    title: "Adicionar Comentários à Tarefa"
+    objective: "Facilitar a comunicação e o registro de informações contextuais sobre as tarefas."
+    context: "Como um Colaborador (Lucas), eu quero adicionar um comentário de texto a uma tarefa específica, para que eu possa fazer perguntas, dar atualizações ou deixar notas para outros membros da equipe."
+    architecture_patterns:
+      - "Endpoint: POST /api/tasks/{taskId}/comments"
+      - "Módulo: comment (novo)"
+      - "Segurança: Endpoint protegido para membros do projeto."
+      - "DTO: CreateCommentRequest com 'content' (texto)."
+      - "Banco de Dados: Insere na tabela 'comments', associando ao 'task_id' e 'user_id'."
+    acceptance_criteria:
+      - "DADO que sou membro de um projeto e estou autenticado,"
+      - "QUANDO eu envio uma requisição POST para /api/tasks/{taskId}/comments com um conteúdo de texto,"
+      - "ENTÃO o sistema deve retornar o status 201 Created com os dados do novo comentário."
+      - "E um novo registro deve ser criado na tabela 'comments' associado à tarefa e ao meu usuário."
+      - "DADO que tento comentar em uma tarefa de um projeto do qual não sou membro,"
+      - "ENTÃO o sistema deve retornar o status 403 Forbidden."
+
+  - id: "GP-2"
+    title: "Adicionar Membros ao Projeto"
+    objective: "Permitir que gerentes de projeto montem suas equipes."
+    context: "Como uma Gerente (Sofia), eu quero adicionar um usuário existente à minha lista de membros do projeto, para que ele possa colaborar nas tarefas."
+    architecture_patterns:
+      - "Endpoint: POST /api/projects/{projectId}/members"
+      - "Módulo: project"
+      - "Segurança: Endpoint protegido para o 'owner' do projeto (role 'MANAGER')."
+      - "DTO: AddMemberRequest com 'userId'."
+      - "Banco de Dados: Insere na tabela 'project_members'."
+    acceptance_criteria:
+      - "DADO que sou a 'owner' de um projeto e estou autenticada com a role 'MANAGER',"
+      - "QUANDO eu envio uma requisição POST para /api/projects/{projectId}/members com o 'userId' de um usuário existente,"
+      - "ENTÃO o sistema deve retornar o status 200 OK."
+      - "E um novo registro deve ser criado na tabela 'project_members' associando o usuário ao projeto."
+      - "DADO que tento adicionar um membro a um projeto que não gerencio,"
+      - "ENTÃO o sistema deve retornar o status 403 Forbidden."
+      - "DADO que tento adicionar um usuário que já é membro,"
+      - "ENTÃO o sistema deve retornar o status 409 Conflict."

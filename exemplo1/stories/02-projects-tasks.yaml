@@ -1,0 +1,58 @@
+epic: "Gestão de Projetos e Tarefas"
+
+stories:
+  - id: "GP-1.1"
+    title: "Criação de um Novo Projeto"
+    objective: "Permitir que gerentes de projeto criem novos espaços de trabalho para suas equipes."
+    context: "Como uma Gerente (Sofia), eu quero criar um novo projeto com um nome e descrição, para que eu possa organizar as tarefas de uma nova iniciativa."
+    architecture_patterns:
+      - "Endpoint: POST /api/projects"
+      - "Módulo: project"
+      - "Segurança: Endpoint protegido para a role 'MANAGER'."
+      - "Banco de Dados: Insere na tabela 'projects' e associa o criador (Sofia) na tabela 'project_members'."
+    acceptance_criteria:
+      - "DADO que estou autenticada com a role 'MANAGER',"
+      - "QUANDO eu envio uma requisição POST para /api/projects com um nome de projeto válido,"
+      - "ENTÃO o sistema deve retornar o status 201 Created com os dados do novo projeto."
+      - "E um novo registro deve ser criado na tabela 'projects' com meu ID como 'owner_id'."
+      - "E um novo registro deve ser criado na tabela 'project_members' me associando ao novo projeto."
+      - "DADO que estou autenticada com a role 'COLLABORATOR',"
+      - "QUANDO eu tento enviar a mesma requisição,"
+      - "ENTÃO o sistema deve retornar o status 403 Forbidden."
+
+  - id: "GT-1.1"
+    title: "Criação de uma Nova Tarefa em um Projeto"
+    objective: "Permitir que membros de um projeto adicionem novas tarefas ao quadro."
+    context: "Como uma Gerente (Sofia), eu quero criar uma nova tarefa dentro de um projeto, atribuindo um título, um responsável e uma data de entrega, para que eu possa delegar o trabalho claramente."
+    architecture_patterns:
+      - "Endpoint: POST /api/projects/{projectId}/tasks"
+      - "Módulo: task"
+      - "Segurança: Endpoint protegido para membros do projeto."
+      - "DTO: CreateTaskDTO com title, description, assigneeId, dueDate."
+      - "Banco de Dados: Insere na tabela 'tasks', associando ao 'project_id' e 'assignee_id' corretos."
+    acceptance_criteria:
+      - "DADO que sou membro de um projeto e estou autenticada,"
+      - "QUANDO eu envio uma requisição POST para /api/projects/{projectId}/tasks com dados válidos,"
+      - "ENTÃO o sistema deve retornar o status 201 Created com os dados da nova tarefa."
+      - "E a nova tarefa deve ser criada na tabela 'tasks' com o status padrão 'TODO'."
+      - "E a tarefa deve estar corretamente associada ao projeto e ao usuário responsável."
+      - "DADO que tento criar uma tarefa em um projeto do qual não sou membro,"
+      - "ENTÃO o sistema deve retornar o status 403 Forbidden."
+
+  - id: "GT-2.1"
+    title: "Visualização de Tarefas no Quadro Kanban"
+    objective: "Permitir que membros da equipe visualizem o status de todas as tarefas de um projeto."
+    context: "Como um Colaborador (Lucas), eu quero visualizar todas as tarefas de um projeto em um quadro com colunas 'A Fazer', 'Em Andamento' e 'Concluído', para que eu possa entender o fluxo de trabalho e ver minhas prioridades."
+    architecture_patterns:
+      - "Endpoint: GET /api/projects/{projectId}/tasks"
+      - "Módulo: task"
+      - "Segurança: Endpoint protegido para membros do projeto."
+      - "Banco de Dados: Consulta a tabela 'tasks' filtrando pelo 'project_id'."
+      - "Resposta: A API deve retornar uma lista de tarefas, que o frontend organizará nas colunas."
+    acceptance_criteria:
+      - "DADO que sou membro de um projeto e estou autenticada,"
+      - "QUANDO eu faço uma requisição GET para /api/projects/{projectId}/tasks,"
+      - "ENTÃO o sistema deve retornar o status 200 OK."
+      - "E o corpo da resposta deve conter uma lista de todas as tarefas associadas àquele projeto."
+      - "DADO que tento visualizar as tarefas de um projeto do qual não sou membro,"
+      - "ENTÃO o sistema deve retornar o status 403 Forbidden."

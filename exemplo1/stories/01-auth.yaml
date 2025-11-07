@@ -1,0 +1,71 @@
+epic: "Autenticação e Gestão de Acesso"
+
+stories:
+  - id: "AU-1.1"
+    title: "Cadastro de Usuário com E-mail e Senha"
+    objective: "Permitir que novos usuários criem uma conta na plataforma."
+    context: "Como um novo usuário (Lucas), eu quero me cadastrar usando meu nome, e-mail e senha, para que eu possa acessar a plataforma e gerenciar minhas tarefas."
+    architecture_patterns:
+      - "Endpoint: POST /api/user/register"
+      - "Entidade: 'User' com role default 'COLLABORATOR'"
+      - "Segurança: Senha deve ser armazenada com hash (bcrypt)"
+    acceptance_criteria:
+      - "DADO que eu não sou um usuário registrado,"
+      - "QUANDO eu envio uma requisição POST para /api/user/register com nome, e-mail e senha válidos,"
+      - "ENTÃO o sistema deve retornar o status 201 Created."
+      - "E um novo registro de usuário deve ser criado na tabela 'users'."
+      - "E a senha do usuário deve estar hasheada no banco de dados."
+      - "E o novo usuário deve ter a role 'COLLABORATOR' por padrão."
+      - "QUANDO eu tento me cadastrar com um e-mail que já existe,"
+      - "ENTÃO o sistema deve retornar o status 409 Conflict."
+
+  - id: "AU-1.2"
+    title: "Login de Usuário com Credenciais"
+    objective: "Permitir que usuários registrados acessem a plataforma e recebam um token de autenticação."
+    context: "Como um usuário registrado (Sofia), eu quero fazer login com meu e-mail e senha, para que eu possa acessar meus projetos e dashboards."
+    architecture_patterns:
+      - "Endpoint: POST /api/user/login"
+      - "Autenticação: Geração de JWT após validação de credenciais."
+      - "JWT Payload: Deve conter userId, email e role."
+    acceptance_criteria:
+      - "DADO que eu sou um usuário registrado e com credenciais válidas,"
+      - "QUANDO eu envio uma requisição POST para /api/user/login,"
+      - "ENTÃO o sistema deve retornar o status 200 OK."
+      - "E a resposta deve conter um JSON Web Token (JWT) válido."
+      - "DADO que eu forneço credenciais inválidas,"
+      - "QUANDO eu envio a mesma requisição,"
+      - "ENTÃO o sistema deve retornar o status 401 Unauthorized."
+
+  - id: "AU-2.1"
+    title: "Login com SSO (Google)"
+    objective: "Permitir que usuários façam login ou se cadastrem usando suas contas Google."
+    context: "Como um administrador (Carlos), eu quero que os usuários possam usar o login do Google, para simplificar o acesso e aumentar a segurança."
+    architecture_patterns:
+      - "Framework: Spring Security OAuth2/OIDC Client"
+      - "Fluxo: Redirecionamento para o provedor (Google), callback, verificação de usuário no DB, e geração de JWT."
+    acceptance_criteria:
+      - "DADO que eu estou na tela de login,"
+      - "QUANDO eu clico em 'Entrar com Google',"
+      - "ENTÃO eu sou redirecionado para a página de autenticação do Google."
+      - "QUANDO eu autorizo o acesso,"
+      - "ENTÃO eu sou redirecionado de volta para a aplicação e estou logado."
+      - "E se for meu primeiro acesso, uma conta de usuário é criada automaticamente no banco de dados com a role 'COLLABORATOR'."
+      - "E um JWT é gerado para minha sessão."
+
+  - id: "CA-2.1"
+    title: "Proteção de Endpoints Baseada em Role"
+    objective: "Garantir que apenas usuários com a permissão correta possam acessar determinados endpoints."
+    context: "Como um administrador (Carlos), eu quero que o sistema restrinja o acesso a funcionalidades administrativas, para que colaboradores não possam executar ações de gerentes ou administradores."
+    architecture_patterns:
+      - "Framework: Spring Security"
+      - "Mecanismo: Filtro de segurança que valida o JWT e extrai a role."
+      - "Implementação: Anotações como @PreAuthorize('hasRole(\'MANAGER\')') nos métodos dos controllers."
+    acceptance_criteria:
+      - "DADO que eu estou autenticado com a role 'COLLABORATOR',"
+      - "QUANDO eu tento acessar um endpoint restrito a 'MANAGER' (ex: POST /api/projects),"
+      - "ENTÃO o sistema deve retornar o status 403 Forbidden."
+      - "DADO que eu estou autenticado com a role 'MANAGER',"
+      - "QUANDO eu tento acessar o mesmo endpoint,"
+      - "ENTÃO o sistema deve processar a requisição e retornar um status 2xx."
+      - "DADO que eu tento acessar qualquer endpoint protegido sem um JWT válido,"
+      - "ENTÃO o sistema deve retornar o status 401 Unauthorized."
